@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Country {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  regions  Region[]
+  posts    Post[]
+}
+
+model Region {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  countryId Int
+  country   Country  @relation(fields: [countryId], references: [id])
+  cities    City[]
+  posts     Post[]
+}
+
+model City {
+  id        Int       @id @default(autoincrement())
+  name      String
+  regionId  Int
+  region    Region    @relation(fields: [regionId], references: [id])
+  districts District[]
+  posts    Post[]
+}
+
+model District {
+  id       Int       @id @default(autoincrement())
+  name     String
+  cityId   Int
+  city     City      @relation(fields: [cityId], references: [id])
+  posts    Post[]
+}
+
+enum Role {
+  ADMIN
+  USER
+  GUEST
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  fullName  String
+  email     String    @unique
+  password  String
+  imageUrl  String?
+  phoneNum  String?
+  role      Role      @default(USER)
+  posts     Post[]
+}
+
+
+model Category {
+  id            Int           @id @default(autoincrement())
+  name          String
+  subCategories SubCategory[]
+  posts         Post[]
+}
+
+model SubCategory {
+  id         Int       @id @default(autoincrement())
+  name       String
+  categoryId Int
+  category   Category  @relation(fields: [categoryId], references: [id])
+}
+
+model Post {
+  id               Int       @id @default(autoincrement())
+  title            String
+  description      String
+  categoryId       Int
+  category         Category  @relation(fields: [categoryId], references: [id])
+  userId           Int
+  user             User      @relation(fields: [userId], references: [id])
+  contactPhoneNum  String?
+  creationDate     DateTime  @default(now())
+  expirationDate   DateTime
+  imgUrls          String[]
+  country_id       Int?
+  country          Country?   @relation(fields: [country_id], references: [id])
+  region_id        Int?
+  region           Region?    @relation(fields: [region_id], references: [id])
+  city_id          Int?
+  city             City?      @relation(fields: [city_id], references: [id])
+  district_id      Int?
+  district         District?  @relation(fields: [district_id], references: [id])
+  animalId         Int?
+  animal           Animal?   @relation(fields: [animalId], references: [id])
+}
+
+model AnimalSpecies {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  breeds Breed[]
+  animals Animal[]
+}
+
+model Breed {
+  id             Int             @id @default(autoincrement())
+  name           String
+  speciesId      Int
+  species        AnimalSpecies   @relation(fields: [speciesId], references: [id])
+  animals        Animal[]
+}
+
+model Animal {
+  id           Int       @id @default(autoincrement())
+  name         String
+  speciesId    Int?
+  breedId      Int?
+  age          Int?
+  description  String?
+  species      AnimalSpecies? @relation(fields: [speciesId], references: [id])
+  breed        Breed?         @relation(fields: [breedId], references: [id])
+  posts        Post[]
+}
